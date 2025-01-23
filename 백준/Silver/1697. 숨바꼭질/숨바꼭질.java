@@ -25,16 +25,23 @@ public class Main {
             int currentPosition = q.poll();
             time = timeq.poll();
             if(currentPosition == brother){break;}
-            if(currentPosition<0 || currentPosition>100000){continue;} 
-            if(!visited[currentPosition]){
+
+            if(currentPosition*2>=0 && currentPosition*2<=100000 && !visited[currentPosition*2]){
                 q.offer(currentPosition*2);
-                q.offer(currentPosition+1);
-                q.offer(currentPosition-1);
-                timeq.offer(time+1);
-                timeq.offer(time+1);
+                visited[currentPosition*2] = true;
                 timeq.offer(time+1);
             }
-            visited[currentPosition] = true;
+            if(currentPosition+1>=0 && currentPosition+1<=100000 && !visited[currentPosition+1]){
+                q.offer(currentPosition+1);
+                visited[currentPosition+1] = true;
+                timeq.offer(time+1);
+            }
+            if(currentPosition-1>=0 && currentPosition-1<=100000 && !visited[currentPosition-1] ){
+                q.offer(currentPosition-1);
+                visited[currentPosition-1] = true;
+                timeq.offer(time+1);
+            }
+            
         }
     }
 }
