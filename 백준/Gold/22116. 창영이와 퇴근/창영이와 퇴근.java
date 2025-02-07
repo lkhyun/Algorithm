@@ -1,9 +1,25 @@
 import java.io.*;
 import java.util.*;
 
+class Node implements Comparable<Node> {
+    int i, j, maxSlope;
+
+    Node(int i, int j, int maxSlope) {
+        this.i = i;
+        this.j = j;
+        this.maxSlope = maxSlope;
+    }
+
+    @Override
+    public int compareTo(Node other) {
+        return Integer.compare(this.maxSlope, other.maxSlope); // 최소 경사값을 기준으로 정렬
+    }
+}
+
 public class Main {
     static int N;
     static int[][] grid;
+    static int[][] dist;
     static int[] di = {-1, 1, 0, 0};
     static int[] dj = {0, 0, -1, 1};
 
@@ -13,68 +29,48 @@ public class Main {
 
         N = Integer.parseInt(br.readLine());
         grid = new int[N][N];
-
-        int minHeight = Integer.MAX_VALUE;
-        int maxHeight = Integer.MIN_VALUE;
+        dist = new int[N][N];
 
         for (int i = 0; i < N; i++) {
             StringTokenizer st = new StringTokenizer(br.readLine());
             for (int j = 0; j < N; j++) {
                 grid[i][j] = Integer.parseInt(st.nextToken());
-                minHeight = Math.min(minHeight, grid[i][j]);
-                maxHeight = Math.max(maxHeight, grid[i][j]);
+                dist[i][j] = Integer.MAX_VALUE; // 최대 경사를 저장하므로, 최댓값으로 초기화
             }
         }
 
-        // 이분 탐색: 가능한 최대 경사의 최솟값을 찾음
-        int left = 0, right = maxHeight - minHeight;
-        int result = right;
+        dijkstra();
 
-        while (left <= right) {
-            int mid = (left + right) / 2;
-
-            if (isPossible(mid)) {  // mid 이하의 경사만으로 목적지 도달 가능?
-                result = mid;  // 정답 업데이트
-                right = mid - 1;
-            } else {
-                left = mid + 1;
-            }
-        }
-
-        bw.write(result + "\n");
+        bw.write(dist[N - 1][N - 1] + "\n");
         bw.flush();
         br.close();
         bw.close();
     }
 
-    // BFS를 이용하여 최대 경사 mid 이하로 목적지까지 도달 가능한지 확인
-    public static boolean isPossible(int maxSlope) {
-        Queue<int[]> queue = new LinkedList<>();
-        boolean[][] visited = new boolean[N][N];
+    public static void dijkstra() {
+        PriorityQueue<Node> pq = new PriorityQueue<>();
+        pq.add(new Node(0, 0, 0));  // 시작 위치, 초기 경사 0
+        dist[0][0] = 0;
 
-        queue.add(new int[]{0, 0});
-        visited[0][0] = true;
+        while (!pq.isEmpty()) {
+            Node current = pq.poll();
 
-        while (!queue.isEmpty()) {
-            int[] cur = queue.poll();
-            int i = cur[0], j = cur[1];
-
-            if (i == N - 1 && j == N - 1) return true;  // 목적지 도착 가능
+            if (current.maxSlope > dist[current.i][current.j]) continue; // 기존 값보다 크면 무시
 
             for (int d = 0; d < 4; d++) {
-                int newi = i + di[d];
-                int newj = j + dj[d];
+                int newi = current.i + di[d];
+                int newj = current.j + dj[d];
 
-                if (newi >= 0 && newi < N && newj >= 0 && newj < N && !visited[newi][newj]) {
-                    int slope = Math.abs(grid[newi][newj] - grid[i][j]);
+                if (newi >= 0 && newi < N && newj >= 0 && newj < N) {
+                    int slope = Math.abs(grid[newi][newj] - grid[current.i][current.j]); // 경사 계산
+                    int newMaxSlope = Math.max(current.maxSlope, slope); // 경로 중 최대 경사 갱신
 
-                    if (slope <= maxSlope) {  // mid 이하의 경사만 이동 가능
-                        visited[newi][newj] = true;
-                        queue.add(new int[]{newi, newj});
+                    if (dist[newi][newj] > newMaxSlope) { // 더 작은 최대 경사값을 찾으면 갱신
+                        dist[newi][newj] = newMaxSlope;
+                        pq.add(new Node(newi, newj, newMaxSlope));
                     }
                 }
             }
         }
-        return false;  // 목적지까지 도달 불가능
     }
 }
