@@ -9,21 +9,18 @@ public class Main {
     public static void main(String[] args) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+        StringTokenizer st = new StringTokenizer(br.readLine());
         
-        while (true) {
-            StringTokenizer st = new StringTokenizer(br.readLine());
-            A = Integer.parseInt(st.nextToken()); 
-            B = Integer.parseInt(st.nextToken());
-            
+        while (st.hasMoreTokens()) {
+            A = Integer.parseInt(st.nextToken()); // 총 사용량에 기반한 요금
+            B = Integer.parseInt(st.nextToken()); // 요금 차이
             if (A == 0 && B == 0) break;
             
-            totalUse = convertToUse(A); // 총 사용량
-            int sangeunUse = binarySearch(0, totalUse); // 상근이의 사용량 결정
-            
-            // 올바른 요금 선택 (더 작은 값을 출력)
-            int fee1 = convertToFee(sangeunUse);
-            int fee2 = convertToFee(totalUse - sangeunUse);
-            bw.write(Math.min(fee1, fee2) + "\n");
+            totalUse = convertToUse(A); // 총 사용량(상한)
+            int use1 = binarySearch(0, totalUse); // 상근이의 사용 요금
+            int use2 = totalUse-use1;
+            bw.write(Math.min(convertToFee(use1),convertToFee(use2)) +"\n");
+            st = new StringTokenizer(br.readLine());
         }
         
         bw.flush();
@@ -35,22 +32,21 @@ public class Main {
             int sangeunFee = convertToFee(mid);
             int nextToFee = convertToFee(totalUse - mid);
             
-            int diff = Math.abs(nextToFee - sangeunFee);
-            if (diff == B) return mid;
-            else if (diff < B) right = mid - 1;
+            if (Math.abs(nextToFee - sangeunFee) == B) return mid;
+            else if (Math.abs(nextToFee - sangeunFee) < B) right = mid - 1;
             else left = mid + 1;
         }
         return left;
     }
 
-    public static int convertToFee(int use) { // 사용량 -> 요금 변환
+    public static int convertToFee(int use) { // 사용량 -> 요금
         if (use > 1000000) return 4979900 + (use - 1000000) * 7;
         if (use > 10000) return 29900 + (use - 10000) * 5;
         if (use > 100) return 200 + (use - 100) * 3;
         return use * 2;
     }
 
-    public static int convertToUse(int fee) { // 요금 -> 사용량 변환
+    public static int convertToUse(int fee) { // 요금 -> 사용량
         if (fee > 4979900) return 1000000 + (fee - 4979900) / 7;
         if (fee > 29900) return 10000 + (fee - 29900) / 5;
         if (fee > 200) return 100 + (fee - 200) / 3;
