@@ -14,19 +14,21 @@ public class Main {
         for (int i = 0; i < M; i++) {
             Ms[i] = Integer.parseInt(st.nextToken());
         }
-        Map<Integer,Integer> Ns = new HashMap<>(N); 
+        List<int[]> Ns = new ArrayList<>(N); 
         for (int i = 0; i < N; i++) {
             st = new StringTokenizer(br.readLine());
-            Ns.put(Integer.parseInt(st.nextToken()),Integer.parseInt(st.nextToken()));
+            int x = Integer.parseInt(st.nextToken());
+            int y = Integer.parseInt(st.nextToken());
+            Ns.add(new int[]{x,y});
         }
 
         Arrays.sort(Ms);
 
         int count=0;
-        for (int i:Ns.keySet()) {
-            int state = Arrays.binarySearch(Ms, i);
+        for (int[] i:Ns) {
+            int state = Arrays.binarySearch(Ms, i[0]);
             if(state>=0){
-                if(Ns.get(i)<=L){
+                if(i[1]<=L){
                     count++;
                 }
 
@@ -35,21 +37,21 @@ public class Main {
                 int lefttemp = temp-1;
                 int righttemp = temp;
                 if(lefttemp<0){
-                    if(Math.abs(Ms[righttemp] - i) + Ns.get(i) <= L){
+                    if((long)Ms[righttemp] - i[0] + i[1] <= (long)L){
                         count++;
                     }
                 }else if(righttemp==Ms.length){
-                    if(Math.abs(Ms[lefttemp] - i) + Ns.get(i) <= L){
+                    if((long)i[0]-Ms[lefttemp] + i[1] <= (long)L){
                         count++;
                     }
 
                 }else{
-                    if(Math.abs(Ms[righttemp]-i)>Math.abs(Ms[lefttemp]-i)){
-                        if(Math.abs(Ms[lefttemp] - i) + Ns.get(i) <= L){
+                    if((long)Ms[righttemp]-i[0]>(long)i[0]-Ms[lefttemp]){
+                        if((long)i[0]-Ms[lefttemp] + i[1] <= (long)L){
                             count++;
                         }
                     }else{
-                        if(Math.abs(Ms[righttemp] - i) + Ns.get(i) <= L){
+                        if((long)Ms[righttemp] - i[0] + i[1] <= (long)L){
                             count++;
                         }
                     }
