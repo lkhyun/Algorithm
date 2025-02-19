@@ -15,17 +15,18 @@ public class Solution {
         
         for(int t=1;t<=T;t++){ 
             StringTokenizer st = new StringTokenizer(br.readLine());
+            StringBuilder sb = new StringBuilder();
             for(int i = 0; i<9;i++){
                 gyu[i] = Integer.parseInt(st.nextToken());
                 visited[gyu[i]] = true;
             }
             back(0);
-            bw.write("#"+t+" "+win+" "+lose+"\n");
+            sb.append("#").append(t).append(" ").append(win).append(" ").append(lose);
+            System.out.println(sb.toString());
             win = 0;
             lose = 0;
             Arrays.fill(visited,false);
         }
-        bw.flush();
     }
     public static void back(int depth){
         if(depth == 9){
