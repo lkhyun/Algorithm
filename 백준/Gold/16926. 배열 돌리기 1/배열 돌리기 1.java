@@ -1,102 +1,126 @@
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
 
 public class Main {
-    private static final int BUFFER_SIZE = 1 << 16;
-    private static DataInputStream din = new DataInputStream(System.in);
-    private static byte[] buffer = new byte[BUFFER_SIZE];
-    private static int bufferPointer = 0, bytesRead = 0;
-    
-    public static void main(String[] args) throws Exception {
+
+    static final int BUFFER_SIZE = 1 << 16;
+    static BufferedInputStream bis = new BufferedInputStream(System.in, BUFFER_SIZE);
+
+    static byte[] inBuffer = new byte[BUFFER_SIZE];
+    static int inIndex, inSize;
+
+    public static void main(String[] args) throws IOException {
         int N = nextInt();
         int M = nextInt();
         int R = nextInt();
-        
+
         int[][] arr = new int[N][M];
-        for (int i = 0; i < N; i++){
-            for (int j = 0; j < M; j++){
+
+        // 행렬 입력
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < M; j++) {
                 arr[i][j] = nextInt();
             }
         }
-        
-        int layers = Math.min(N, M) / 2;
-        for (int layer = 0; layer < layers; layer++) {
-            int top = layer, left = layer;
-            int bottom = N - 1 - layer, right = M - 1 - layer;
-            int perim = 2 * ((bottom - top) + (right - left));
-            if (perim == 0) continue;
-            int r = R % perim;
-            if (r == 0) continue;
-            
-            int[] ring = new int[perim];
-            int idx = 0;
-            for (int j = left; j <= right; j++) {
-                ring[idx++] = arr[top][j];
+
+        int numRings = Math.min(N, M) / 2;
+        for (int ring = 0; ring < numRings; ring++) {
+            int rowStart = ring, rowEnd = N - 1 - ring;
+            int colStart = ring, colEnd = M - 1 - ring;
+
+            int height = (rowEnd - rowStart + 1);
+            int width = (colEnd - colStart + 1);
+            int elements = 2 * (height + width - 2);
+
+            // 실제 회전 횟수
+            int actualR = R % elements;
+            if (actualR == 0) continue;
+
+            // 링의 요소들을 임시 배열에 저장
+            int[] temp = new int[elements];
+            int t = 0;
+
+            // 상단 행 (왼 -> 오)
+            for (int j = colStart; j < colEnd; j++) {
+                temp[t++] = arr[rowStart][j];
             }
-            for (int i = top + 1; i <= bottom - 1; i++) {
-                ring[idx++] = arr[i][right];
+            // 오른쪽 열 (위 -> 아래)
+            for (int i = rowStart; i < rowEnd; i++) {
+                temp[t++] = arr[i][colEnd];
             }
-            for (int j = right; j >= left; j--) {
-                ring[idx++] = arr[bottom][j];
+            // 하단 행 (오 -> 왼)
+            for (int j = colEnd; j > colStart; j--) {
+                temp[t++] = arr[rowEnd][j];
             }
-            for (int i = bottom - 1; i >= top + 1; i--) {
-                ring[idx++] = arr[i][left];
+            // 왼쪽 열 (아래 -> 위)
+            for (int i = rowEnd; i > rowStart; i--) {
+                temp[t++] = arr[i][colStart];
             }
-            
-            int[] rotated = new int[perim];
-            System.arraycopy(ring, r, rotated, 0, perim - r);
-            System.arraycopy(ring, 0, rotated, perim - r, r);
-            
-            idx = 0;
-            for (int j = left; j <= right; j++) {
-                arr[top][j] = rotated[idx++];
+
+            // temp배열에서 actualR부터 읽어오도록 세팅
+            t = actualR;
+
+            // 상단 행 (왼 -> 오)
+            for (int j = colStart; j < colEnd; j++) {
+                arr[rowStart][j] = temp[t];
+                t = (t + 1) % elements;
             }
-            for (int i = top + 1; i <= bottom - 1; i++) {
-                arr[i][right] = rotated[idx++];
+            // 오른쪽 열 (위 -> 아래)
+            for (int i = rowStart; i < rowEnd; i++) {
+                arr[i][colEnd] = temp[t];
+                t = (t + 1) % elements;
             }
-            for (int j = right; j >= left; j--) {
-                arr[bottom][j] = rotated[idx++];
+            // 하단 행 (오 -> 왼)
+            for (int j = colEnd; j > colStart; j--) {
+                arr[rowEnd][j] = temp[t];
+                t = (t + 1) % elements;
             }
-            for (int i = bottom - 1; i >= top + 1; i--) {
-                arr[i][left] = rotated[idx++];
+            // 왼쪽 열 (아래 -> 위)
+            for (int i = rowEnd; i > rowStart; i--) {
+                arr[i][colStart] = temp[t];
+                t = (t + 1) % elements;
             }
         }
-        
+
+        // 결과를 모아서 출력 (StringBuilder 사용)
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < N; i++){
-            for (int j = 0; j < M; j++){
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < M; j++) {
                 sb.append(arr[i][j]).append(' ');
             }
             sb.append('\n');
         }
         System.out.print(sb);
     }
-    
-    private static int nextInt() throws IOException {
-        int ret = 0;
-        byte c = read();
-        while (c <= ' ') {
-            c = read();
-        }
-        boolean neg = (c == '-');
-        if (neg) {
-            c = read();
-        }
+
+    /** 빠른 입력 메서드들 */
+    static int nextInt() throws IOException {
+        int c;
+        // 공백류 스킵
         do {
-            ret = ret * 10 + (c - '0');
-        } while ((c = read()) >= '0' && c <= '9');
-        return neg ? -ret : ret;
+            c = read();
+            if (c == -1) return -1; 
+        } while (c <= ' ');
+
+        boolean negative = (c == '-');
+        if (negative) {
+            c = read();
+        }
+
+        int val = 0;
+        while (c >= '0' && c <= '9') {
+            val = (val << 3) + (val << 1) + (c & 15); // val * 10 + (c - '0')
+            c = read();
+        }
+        return negative ? -val : val;
     }
-    
-    private static byte read() throws IOException {
-        if (bufferPointer == bytesRead)
-            fillBuffer();
-        return buffer[bufferPointer++];
-    }
-    
-    private static void fillBuffer() throws IOException {
-        bytesRead = din.read(buffer, 0, BUFFER_SIZE);
-        if (bytesRead == -1)
-            buffer[0] = -1;
-        bufferPointer = 0;
+
+    static int read() throws IOException {
+        if (inIndex == inSize) {
+            inSize = bis.read(inBuffer, 0, BUFFER_SIZE);
+            if (inSize == -1) return -1;
+            inIndex = 0;
+        }
+        return inBuffer[inIndex++] & 0xFF;
     }
 }
