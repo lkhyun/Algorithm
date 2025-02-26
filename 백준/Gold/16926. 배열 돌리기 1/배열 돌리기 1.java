@@ -5,68 +5,70 @@ public class Main {
     public static void main(String[] args) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
-        
-        int N = Integer.parseInt(st.nextToken());
-        int M = Integer.parseInt(st.nextToken());
-        int R = Integer.parseInt(st.nextToken());
+        final int N = Integer.parseInt(st.nextToken());
+        final int M = Integer.parseInt(st.nextToken());
+        final int R = Integer.parseInt(st.nextToken());
         
         int[][] arr = new int[N][M];
         for (int i = 0; i < N; i++) {
             st = new StringTokenizer(br.readLine());
+            int[] row = new int[M];
             for (int j = 0; j < M; j++) {
-                arr[i][j] = Integer.parseInt(st.nextToken());
+                row[j] = Integer.parseInt(st.nextToken());
             }
+            arr[i] = row;
         }
         
-        int layers = Math.min(N, M) / 2;
+        final int layers = Math.min(N, M) / 2;
         for (int layer = 0; layer < layers; layer++) {
             int top = layer, left = layer;
             int bottom = N - 1 - layer, right = M - 1 - layer;
             
-            int len = 2 * ((bottom - top) + (right - left));
-            int rotations = R % len;
-            if(rotations == 0) continue;
+            int perim = 2 * ((bottom - top) + (right - left));
+            if (perim == 0) continue;
+            int r = R % perim;
+            if (r == 0) continue;
             
-            int[] ring = new int[len];
-            int index = 0;
+            int[] ring = new int[perim];
+            int idx = 0;
+            for (int j = left; j <= right; j++) {
+                ring[idx++] = arr[top][j];
+            }
+            for (int i = top + 1; i <= bottom - 1; i++) {
+                ring[idx++] = arr[i][right];
+            }
+            for (int j = right; j >= left; j--) {
+                ring[idx++] = arr[bottom][j];
+            }
+            for (int i = bottom - 1; i >= top + 1; i--) {
+                ring[idx++] = arr[i][left];
+            }
 
+            int[] rotated = new int[perim];
+            System.arraycopy(ring, r, rotated, 0, perim - r);
+            System.arraycopy(ring, 0, rotated, perim - r, r);
+            idx = 0;
             for (int j = left; j <= right; j++) {
-                ring[index++] = arr[top][j];
+                arr[top][j] = rotated[idx++];
             }
             for (int i = top + 1; i <= bottom - 1; i++) {
-                ring[index++] = arr[i][right];
+                arr[i][right] = rotated[idx++];
             }
             for (int j = right; j >= left; j--) {
-                ring[index++] = arr[bottom][j];
+                arr[bottom][j] = rotated[idx++];
             }
             for (int i = bottom - 1; i >= top + 1; i--) {
-                ring[index++] = arr[i][left];
-            }
-            
-            index = 0;
-            for (int j = left; j <= right; j++) {
-                arr[top][j] = ring[(index + rotations) % len];
-                index++;
-            }
-            for (int i = top + 1; i <= bottom - 1; i++) {
-                arr[i][right] = ring[(index + rotations) % len];
-                index++;
-            }
-            for (int j = right; j >= left; j--) {
-                arr[bottom][j] = ring[(index + rotations) % len];
-                index++;
-            }
-            for (int i = bottom - 1; i >= top + 1; i--) {
-                arr[i][left] = ring[(index + rotations) % len];
-                index++;
+                arr[i][left] = rotated[idx++];
             }
         }
+        
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < N; i++){
-            for (int j = 0; j < M; j++){
-                sb.append(arr[i][j]).append(" ");
+        for (int i = 0; i < N; i++) {
+            int[] row = arr[i];
+            for (int j = 0; j < M; j++) {
+                sb.append(row[j]).append(' ');
             }
-            sb.append("\n");
+            sb.append('\n');
         }
         System.out.print(sb);
     }
