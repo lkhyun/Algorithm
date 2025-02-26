@@ -1,29 +1,27 @@
 import java.io.*;
-import java.util.*;
 
 public class Main {
+    private static final int BUFFER_SIZE = 1 << 16;
+    private static DataInputStream din = new DataInputStream(System.in);
+    private static byte[] buffer = new byte[BUFFER_SIZE];
+    private static int bufferPointer = 0, bytesRead = 0;
+    
     public static void main(String[] args) throws Exception {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        StringTokenizer st = new StringTokenizer(br.readLine());
-        final int N = Integer.parseInt(st.nextToken());
-        final int M = Integer.parseInt(st.nextToken());
-        final int R = Integer.parseInt(st.nextToken());
+        int N = nextInt();
+        int M = nextInt();
+        int R = nextInt();
         
         int[][] arr = new int[N][M];
-        for (int i = 0; i < N; i++) {
-            st = new StringTokenizer(br.readLine());
-            int[] row = new int[M];
-            for (int j = 0; j < M; j++) {
-                row[j] = Integer.parseInt(st.nextToken());
+        for (int i = 0; i < N; i++){
+            for (int j = 0; j < M; j++){
+                arr[i][j] = nextInt();
             }
-            arr[i] = row;
         }
         
-        final int layers = Math.min(N, M) / 2;
+        int layers = Math.min(N, M) / 2;
         for (int layer = 0; layer < layers; layer++) {
             int top = layer, left = layer;
             int bottom = N - 1 - layer, right = M - 1 - layer;
-            
             int perim = 2 * ((bottom - top) + (right - left));
             if (perim == 0) continue;
             int r = R % perim;
@@ -43,10 +41,11 @@ public class Main {
             for (int i = bottom - 1; i >= top + 1; i--) {
                 ring[idx++] = arr[i][left];
             }
-
+            
             int[] rotated = new int[perim];
             System.arraycopy(ring, r, rotated, 0, perim - r);
             System.arraycopy(ring, 0, rotated, perim - r, r);
+            
             idx = 0;
             for (int j = left; j <= right; j++) {
                 arr[top][j] = rotated[idx++];
@@ -63,13 +62,41 @@ public class Main {
         }
         
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < N; i++) {
-            int[] row = arr[i];
-            for (int j = 0; j < M; j++) {
-                sb.append(row[j]).append(' ');
+        for (int i = 0; i < N; i++){
+            for (int j = 0; j < M; j++){
+                sb.append(arr[i][j]).append(' ');
             }
             sb.append('\n');
         }
         System.out.print(sb);
+    }
+    
+    private static int nextInt() throws IOException {
+        int ret = 0;
+        byte c = read();
+        while (c <= ' ') {
+            c = read();
+        }
+        boolean neg = (c == '-');
+        if (neg) {
+            c = read();
+        }
+        do {
+            ret = ret * 10 + (c - '0');
+        } while ((c = read()) >= '0' && c <= '9');
+        return neg ? -ret : ret;
+    }
+    
+    private static byte read() throws IOException {
+        if (bufferPointer == bytesRead)
+            fillBuffer();
+        return buffer[bufferPointer++];
+    }
+    
+    private static void fillBuffer() throws IOException {
+        bytesRead = din.read(buffer, 0, BUFFER_SIZE);
+        if (bytesRead == -1)
+            buffer[0] = -1;
+        bufferPointer = 0;
     }
 }
