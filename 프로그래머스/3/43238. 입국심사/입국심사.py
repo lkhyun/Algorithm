@@ -2,7 +2,7 @@ def solution(n, times):
     answer = 0
     left = 1
     right = max(times)*n
-    while left <= right:
+    while left < right:
         capacity = 0
         mid = (left + right) // 2
         for time in times:
@@ -12,7 +12,7 @@ def solution(n, times):
                 
         if capacity >= n:
             answer = mid
-            right = mid - 1
+            right = mid
         elif capacity < n:
             left = mid + 1
         
