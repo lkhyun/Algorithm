@@ -1,77 +1,88 @@
 import java.util.*;
 import java.io.*;
-class Node{
-    int from,to,weight;
 
-    public Node(int from, int to, int weight) {
-        this.from = from;
+class Node implements Comparable<Node> {
+    int to, weight;
+
+    public Node(int to, int weight) {
         this.to = to;
         this.weight = weight;
     }
+
+    @Override
+    public int compareTo(Node o) {
+        return this.weight - o.weight;
+    }
 }
+
 public class Solution {
-    static int V;
-    static int E;
-    static Node[] adjList; 
-    static int[] parents;
+    static int V, E;
+    static List<Node>[] adjList;
+    static boolean[] visited;
 
     public static void main(String[] args) throws Exception {
         //System.setIn(new FileInputStream("sample_input.txt"));
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         StringTokenizer st;
+
         int T = Integer.parseInt(br.readLine());
-        for(int t = 1;t<=T;t++){
-            bw.write("#"+t+" ");
+        for (int t = 1; t <= T; t++) {
+            bw.write("#" + t + " ");
             st = new StringTokenizer(br.readLine());
 
             V = Integer.parseInt(st.nextToken());
             E = Integer.parseInt(st.nextToken());
-            parents = new int[V+1];
-            adjList = new Node[E];
-           
-            for(int i=0;i<E;i++){
+
+            adjList = new ArrayList[V + 1];
+            visited = new boolean[V + 1];
+
+            for (int i = 0; i <= V; i++) {
+                adjList[i] = new ArrayList<>();
+            }
+
+            for (int i = 0; i < E; i++) {
                 st = new StringTokenizer(br.readLine());
                 int from = Integer.parseInt(st.nextToken());
                 int to = Integer.parseInt(st.nextToken());
                 int weight = Integer.parseInt(st.nextToken());
-                adjList[i] = new Node(from,to,weight);
+                adjList[from].add(new Node(to, weight));
+                adjList[to].add(new Node(from, weight));
             }
-
-            Arrays.sort(adjList,(a,b) -> a.weight - b.weight);
-            make();
-            
-            long total = 0;
-            int count = 0;
-            for(int i = 0;i<E;i++){
-                if(union(adjList[i].from, adjList[i].to)){
-                    total += adjList[i].weight;
-                    if(++count == V-1) break;
+            int start = 0;
+            for(int i=0;i<=V;i++){
+                if(adjList[i].size()!=0){
+                    start = i;
+                    break;
                 }
             }
-            bw.write(total+"\n");
+            long total = prim(start);
+            bw.write(total + "\n");
         }
         bw.close();
     }
-    public static void make(){
-        for(int i=1;i<=V;i++){
-            parents[i] = i;
-        }
-    }
-    public static int find(int a){
-        if(a == parents[a]) return a;
-        return parents[a] = find(parents[a]);
-    }
-    public static boolean union(int a, int b){
-        int aRoot = find(a);
-        int bRoot = find(b);
 
-        if(aRoot == bRoot) return false;
-        else{
-            if(aRoot<bRoot) parents[bRoot] = aRoot;
-            else parents[aRoot] = bRoot;
+    public static long prim(int start) {
+        PriorityQueue<Node> pq = new PriorityQueue<>();
+        pq.offer(new Node(start, 0));
+        long total = 0;
+        int count = 0;
+
+        while (!pq.isEmpty()) {
+            Node current = pq.poll();
+
+            if (visited[current.to]) continue;
+            visited[current.to] = true;
+            total += current.weight;
+
+            if (++count == V) break;
+
+            for (Node next : adjList[current.to]) {
+                if (!visited[next.to]) {
+                    pq.offer(next);
+                }
+            }
         }
-        return true;
+        return total;
     }
-    
 }
