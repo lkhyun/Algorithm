@@ -1,22 +1,21 @@
 import java.util.*;
 import java.io.*;
 class Node{
-    int from,to;
+    int vertex;
     double weight;
 
-    public Node(int from, int to, double weight) {
-        this.from = from;
-        this.to = to;
+    public Node(int vertex, double weight) {
+        this.vertex = vertex;
         this.weight = weight;
     }
 }
 public class Solution {
     static int V;
-    static List<Node> adjList; 
-    static int[] parents;
+    static List<Node>[] adjList; 
     static int[] xposition;
     static int[] yposition;
     static double fee;
+    static boolean[] visited;
 
     public static void main(String[] args) throws Exception {
         //System.setIn(new FileInputStream("sample_input.txt"));
@@ -29,8 +28,12 @@ public class Solution {
             V = Integer.parseInt(br.readLine());
             xposition = new int[V+1];
             yposition = new int[V+1];
-            parents = new int[V+1];
-            adjList = new ArrayList<>();
+            adjList = new ArrayList[V+1];
+            visited = new boolean[V+1];
+
+            for(int i=1;i<=V;i++){
+                adjList[i] = new ArrayList<>();
+            }
 
             st = new StringTokenizer(br.readLine()); 
             for(int i=1;i<=V;i++){ //x 좌표 입력받기
@@ -47,43 +50,35 @@ public class Solution {
                     double dx = xposition[i] - xposition[j];
                     double dy = yposition[i] - yposition[j];
                     double weight = (dx*dx + dy*dy) * fee;
-                    adjList.add(new Node(i,j,weight));
+                    adjList[i].add(new Node(j,weight));
+                    adjList[j].add(new Node(i,weight));
                 }
             }
-            Collections.sort(adjList,(a,b) -> Double.compare(a.weight,b.weight));
-            make();
-            
-            double total = 0;
-            int count = 0;
-            for(Node n : adjList){
-                if(union(n.from,n.to)){
-                    total += n.weight;
-                    if(++count == V-1) break;
-                }
-            }
-            bw.write(String.format("%.0f\n",total));
+            bw.write(String.format("%.0f\n",prim(1)));
         }
         bw.close();
     }
-    public static void make(){
-        for(int i=1;i<=V;i++){
-            parents[i] = i;
-        }
-    }
-    public static int find(int a){
-        if(a == parents[a]) return a;
-        return parents[a] = find(parents[a]);
-    }
-    public static boolean union(int a, int b){
-        int aRoot = find(a);
-        int bRoot = find(b);
+    public static double prim(int start){
+        int count = 0;
+        double total = 0;
+        PriorityQueue<Node> pq = new PriorityQueue<>((a,b)-> Double.compare(a.weight, b.weight));
+        pq.offer(new Node(start,0));
 
-        if(aRoot == bRoot) return false;
-        else{
-            if(aRoot<bRoot) parents[bRoot] = aRoot;
-            else parents[aRoot] = bRoot;
+        while(!pq.isEmpty()){
+            Node cur = pq.poll();
+
+            if(visited[cur.vertex]) continue;
+            visited[cur.vertex] = true;
+            total += cur.weight;
+
+            if(++count == V) break;
+
+            for(Node n: adjList[cur.vertex]){
+                if(!visited[n.vertex]){
+                    pq.offer(n);
+                }
+            }
         }
-        return true;
+        return total;
     }
-    
 }
