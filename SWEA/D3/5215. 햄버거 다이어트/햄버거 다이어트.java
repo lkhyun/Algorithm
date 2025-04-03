@@ -1,61 +1,46 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.StringTokenizer;
+import java.io.*;
+import java.util.*;
 
 public class Solution {
     static int N;
     static int L;
-    static boolean[] mask;
-    static int[] ingradient;
-    static int[] calorie;
+    static int[] flavor;
+    static int[] cal;
+    static int[] dp;
     static int max;
-    
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws Exception {
         //System.setIn(new FileInputStream("sample_input.txt"));
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+        StringTokenizer st;
         int T = Integer.parseInt(br.readLine());
-
-        for (int t = 1; t <= T; t++) {
-            StringTokenizer st = new StringTokenizer(br.readLine());
-            N = Integer.parseInt(st.nextToken()); // 재료 개수
-            L = Integer.parseInt(st.nextToken()); // 제한 칼로리
-            mask = new boolean[N];
-            ingradient = new int[N];
-            calorie = new int[N];
-            for(int i=0;i<N;i++){
-                st = new StringTokenizer(br.readLine());
-                ingradient[i] = Integer.parseInt(st.nextToken());
-                calorie[i] = Integer.parseInt(st.nextToken());
-            }
+        for(int t = 1;t<=T;t++){
+            bw.write("#"+t+" ");
+            st = new StringTokenizer(br.readLine());
+            N = Integer.parseInt(st.nextToken());
+            L = Integer.parseInt(st.nextToken());
+            flavor = new int[N+1];
+            cal = new int[N+1];
+            dp = new int[L+1]; //칼로리당 맛 저장
             max = 0;
-            subset(0);
-            bw.write("#"+t+" "+max+"\n");
-        }
-        bw.flush();
-    }
-    public static void subset(int cnt){
-        if(cnt == N){
-            int totalCalories = 0;
-            int totalFlavor = 0;
-            for(int i=0;i<N;i++){
-                if(mask[i]){
-                    totalCalories += calorie[i];
-                    totalFlavor += ingradient[i];
+
+            for(int i=1;i<=N;i++){
+                st = new StringTokenizer(br.readLine());
+                flavor[i] = Integer.parseInt(st.nextToken());
+                cal[i] = Integer.parseInt(st.nextToken());
+            }
+
+            for(int i=1;i<=N;i++){
+                for(int j=L;j>=cal[i];j--){
+                    dp[j] = Math.max(dp[j],dp[j-cal[i]]+flavor[i]);
                 }
             }
-            if(totalCalories<=L){
-                max = Math.max(max,totalFlavor);
+            for(int i : dp){
+                max = Math.max(max,i);
             }
-            return;
+            bw.write(max+"\n");
         }
-
-        mask[cnt] = true;
-        subset(cnt+1);
-        mask[cnt] = false;
-        subset(cnt+1);
+        
+        bw.close();
     }
 }
