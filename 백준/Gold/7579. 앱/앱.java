@@ -18,34 +18,32 @@ public class Main {
         bytes = new int[N];
         costs = new int[N];
 
-        int memorySize = M;
         st = new StringTokenizer(br.readLine());
         for(int i=0;i<N;i++){
             bytes[i] = Integer.parseInt(st.nextToken());
-            memorySize += bytes[i];
         }
-        dp = new int[memorySize+1];
 
+        int memorySize = 0;
         st = new StringTokenizer(br.readLine());
         for(int i=0;i<N;i++){
             costs[i] = Integer.parseInt(st.nextToken());
+            memorySize += costs[i];
         }
-
-        Arrays.fill(dp,Integer.MAX_VALUE);
-        dp[0] = 0;
+        dp = new int[memorySize+1];
 
         for(int i=0;i<N;i++){
-            for(int j=memorySize;j>=bytes[i];j--){
-                if(dp[j-bytes[i]] != Integer.MAX_VALUE){
-                    dp[j] = Math.min(dp[j],dp[j-bytes[i]]+costs[i]);
-                }
+            for(int j=memorySize;j>=costs[i];j--){
+                dp[j] = Math.max(dp[j],dp[j-costs[i]]+bytes[i]);
             }
         }
-        int min = Integer.MAX_VALUE;
-        for(int i=M;i<=memorySize;i++){
-            min = Math.min(min,dp[i]);
+        int idx = 0;
+        for(int i=0;i<=memorySize;i++){
+            if(dp[i]>=M){
+                idx = i;
+                break;
+            }
         }
-        bw.write(min+"");
+        bw.write(idx+"");
         bw.close(); 
     }
 }
