@@ -22,15 +22,14 @@ public class Main {
 
             visited = new boolean[n+1];
             noTeamCnt = 0;
-            for (int i = 1; i <= n; i++) {
-                if(visited[i]) continue;
+            for (int i = 1; i <= n; i++) { // 매 인원마다 체크
+                if(visited[i]) continue; // 한번이라도 거쳐갔다면 넘어감
                 int cur = want[i];
                 List<Integer> temp = new ArrayList<>();
-                temp.add(i);
-                visited[i] = true;
-                while(!visited[cur]) {
+                temp.add(i); //현재 인원을 리스트에 넣고
+                visited[i] = true; //다녀감 체크
+                while(!visited[cur]) { //순회하지 않은 경우만 돌음
                     temp.add(cur);
-                    if(visited[cur]) break;
                     visited[cur] = true;
                     cur = want[cur];
                 }
