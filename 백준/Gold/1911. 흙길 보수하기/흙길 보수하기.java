@@ -26,7 +26,11 @@ public class Main{
                 cur = k-1;
             }
             int end = m.get(k);
-            while(cur < end){
+
+            int lCnt = (end-cur)/L;
+            cur += L*lCnt;
+            cnt += lCnt;
+            if(cur < end){
                 cur += L;
                 cnt++;
             }
