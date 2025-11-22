@@ -1,0 +1,15 @@
+WITH RANK_DATA AS (
+    SELECT E.ID, PERCENT_RANK() OVER(
+        ORDER BY E.SIZE_OF_COLONY DESC
+    ) RANKED
+    FROM ECOLI_DATA E
+)
+        
+SELECT R.ID, CASE
+                WHEN R.RANKED <= 0.25 THEN 'CRITICAL'
+                WHEN R.RANKED <= 0.5 THEN 'HIGH'
+                WHEN R.RANKED <= 0.75 THEN 'MEDIUM'
+                ELSE 'LOW'
+             END COLONY_NAME
+FROM RANK_DATA R
+ORDER BY R.ID ASC
